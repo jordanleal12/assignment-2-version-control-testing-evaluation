@@ -231,6 +231,73 @@ The result is the creation of an instance of the parent class `WeatherService`, 
 
 ### 3. Smoke Test
 
+Put simply, smoke testing is ensuring the major features of the application work as intended. As a manual test, this is very easy to imagine. Say you're testing a CLI application - simply follow the provided instructions, and attempt to use the application as intended.[^17]
+
+For an automated process, this involves running pre-determined script(s), mimicking normal, expected user input, and asserting the output matches expectations.
+
+An example of use in my code is as follows:
+
+```python
+class DummyHandler:
+    """A simple dummy output handler to simulate terminal output."""
+
+    def output(self, data):
+        """Simulate outputting data to the terminal."""
+        print(f"OUTPUT: {data}")
+
+
+class InputDriver:
+    """A class to simulate user input for testing purposes."""
+
+    def __init__(self, responses):
+        self._iter = iter(responses)
+
+    def __call__(self, prompt=""):
+        return next(self._iter)
+
+def test_cli_happy_path(monkeypatch, capsys):
+    """Test the main() function in main.py with a happy path scenario."""
+
+    monkeypatch.setenv("OWM_API_KEY", "DUMMY")
+
+    # Stub out the network call so we always get a valid dict
+    monkeypatch.setattr(
+        WeatherService, "get_weather_data",
+        lambda self, city: {
+            "city": city,
+            "temperature": 20,
+            "humidity": 50,
+            "condition": "sunny",
+            "local_time": "01-Jan-21 12:00 AM UTC"
+        }
+    )
+
+    # Patch the class imported in main.py
+    monkeypatch.setattr(main, "TerminalOutput", DummyHandler)
+
+    # Simulate typing: [menu choice, city name, exit]
+    responses = ["1", "TestCity", "exit"]
+    monkeypatch.setattr(builtins, "input", InputDriver(responses))
+
+    # Run main(); it'll call exit() on "exit", so catch the SystemExit
+    with pytest.raises(SystemExit):
+        main.main()
+
+    # Grab what was printed and verify our DummyHandler ran
+    out = capsys.readouterr().out
+    assert "OUTPUT: {'city': 'testcity', 'temperature': 20, 'humidity': 50" in out
+```
+
+Although verbose, the above process is fairly simple:
+
+- The app requires an API key which is faked using `monkeypatch.setenv`
+- The API call is bypassed using `monkeypatch.setattr` and a fixed fake response is received
+- The real terminal output is replaced with the `DummyHandler` class, to allow testing of the output
+- The user inputs are faked using `monkeypatch.setattr` and the `InputDriver` class to simulate menu selection and city name entry
+- The app is run, and calls `exit()` is raised to test app exiting
+- App output is captured by `capsys.readouterr()`
+- The output is asserted by pytest to ensure that the output matches expectations
+
 [^1]: [2022 StackOverflow Survey](https://survey.stackoverflow.co/2022/#section-version-control-version-control-systems)
 [^2]: [Git vs SVN - Nulab](https://nulab.com/learn/software-development/git-vs-svn-version-control-system/)
 [^3]: [Branching & Merging - Git](https://git-scm.com/about/branching-and-merging)
@@ -247,3 +314,4 @@ The result is the creation of an instance of the parent class `WeatherService`, 
 [^14]: [Pull Requests - GitHub](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request)
 [^15]: [What is Unit Testing? - Brightsec](https://www.brightsec.com/blog/unit-testing/#:~:text=What%20Is%20Unit%20Testing%3F)
 [^16]: [Integration Testing - FullStackPython](https://www.fullstackpython.com/integration-testing.html)
+[^17]: [Smoke Testing - Guru99](https://www.guru99.com/smoke-testing.html)
