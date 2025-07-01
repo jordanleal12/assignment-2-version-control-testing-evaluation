@@ -365,24 +365,127 @@ def extension_checker(filename: str, f_type: str) -> str:
     return filename
 ```
 
-## Challenges & Potential Improvements for Project Software Testing
+## Incorporating Testing Within Recent Project
 
-As my first ever CLI python application, there was inevitably countless challenges and potential improvements for the testing process. As such, I'll focus on the five most relevant challenges, outlining the challenge I faced, the impact it had on the project, what I did to fix it and how my process could be improved in the future.
+As my first ever CLI python application, there was inevitably countless challenges and potential improvements for the testing process. As such, I'll focus on the four most relevant challenges, outlining the challenge I faced, the impact it had on the project, what I did to fix it and how my process could be improved in the future.
 
 Considering our cohort skipped the unit on testing prior to building our CLI applications, many parts of the application that where tested manually could have been significantly expedited using automated testing. Writing the code using TDD practices would have also been significantly beneficial to providing direction, as there were many times I was stuck thinking "now what?".
 
 ### Parsing Local DateTime from API
 
 **1. The Challenge:** When processing and retrieving datetime using the API call, then converting to localized datetime, the time was inaccurate, usually roughly ~5 minutes behind. For example if I was to get a weather report for Sydney, I could see that the timestamp was behind what my local time was.
+
 **2. The Impact:** I spent hours going over my code looking for bugs, refactoring things to try and get it to work and browsing forums as well as the OpenWeatherMap API docs - convinced it was an issue with my code!
-**3. The Solution:** After finally discovering the issue wasn't with my code, but rather that the API only received weather updates every 5-10 minutes, I added information to my Readme page so that the user would be made aware.
+
+**3. The Solution:** After finally discovering the issue wasn't with my code, but rather that the API only received weather updates every 5-10 minutes, I added information to my Readme page and terminal output so that the user would be made aware.
+
 **4. The Improvements:** The most vital part of this challenge I faced is that it all could have been avoided with the use of correct testing procedure. Using requests_mock and pytest, I could have designed a unit test and integration test to provide a fake json response from my API and test if my code was processing the received datetime information correctly. This would have isolated that the issue was coming from the API end rather than my code, expediting the trouble shooting process. The 'Integration Testing' example under the 'Standard Testing Procedure' provides an example of the appropriate test.
 
 Further improvements to the code could be made by adding context to the time stamp - eg. "Weather Data last updated x minutes ago", using the DateTime module to compare the timestamp to the current time.
 
+**5. The User Experience:** Initially, feedback was received that the time stamp wasn't accurate. Test users mentioned that this gave them concerns for the reliability of the application, if that part wasn't accurate what else might not be accurate? After updating the Readme and terminal output explaining the time difference, the test users made no further mention.
+
+If the implementation of adding context to the timestamp as mentioned above was to go ahead, user feedback would be requested to see if it garnered a more positive response.
+
 ### API Key Activation and Error Handling
 
-**1. The Challenge:**
+**1. The Challenge:** Part of my testing procedure was providing my completed code to some friends of mine, having them follow the Readme instructions, and having them attempt to use the application start to finish - a manual smoke test using beta testers on different devices and operating systems. The testing ran into an early speed-bump, being that any request made returned the following errors:
+
+```
+HTTP Error: 401 - Unauthorized
+Value Error: No data found for the specified city.
+```
+
+**2. The Impact:** A quick search revealed that a 401 error is provided when the request lacks valid authentication credentials.[^19] Initially, I thought this to be an easy fix, I hadn't added instructions for the tester to verify their email upon sign-up for their API key, and after adding this to the Readme I was assured this would be fixed. However, even after verifying the user email, the same error was being returned. Moreover, when creating new accounts myself I was receiving the same error.
+
+This led me down another wild goose chase - manually adding API keys to requests in the browser, searching through code, researching .env integration etc. To add further confusion, some of the API keys had no started working, while others continued to not work. Eventually this led me to realize that the error was being caused by a ~30-60 minute delay between receiving the API key and the key being activated.
+
+**3. The Solution:** After realizing that the issue was with the delay for activation rather than a code error, the Readme was updated to convey this new information, and a pre-activated API key was provided in the Readme purely for testing purposes (this would not be included in a real release for security reasons).
+
+**4. The Improvements** This is another example of how using proper testing procedure could have caught the cause of the error much earlier. Using requests_mock to create tests simulating API response without actually contacting the API would have allowed my beta testers to confirm that the code ran correctly on their local instances. This would have allowed us to isolate the API call as a problem on the API side.
+
+Another improvement to be made in the testing procedure is a more thorough user smoke-test before sending the application off to beta testers. Although this application was smoke tested by me, I did not sign up as a new user to OpenWeatherMap, and used my existing API key, something that would have highlighted the issue much earlier. Implementation of proper API testing guidelines [as found here](https://www.functionize.com/automated-testing/automated-api-testing), would have improved and standardized my testing approach.[^20]
+
+Finally, removing the process of having the user sign up for an API key altogether would significantly improve user experience. This could be done through two methods - transferring the API call over to a site that doesn't require an API key (eg. open-meteo)[^21]. Alternatively, using a serverless proxy to add the API key to the request in the backend, where it can't be accessed by users.
+
+This could be done through methods such as using an API Gateway through AWS Lambda - sending a request from the application to the API Gateway - parsing the request and extracting the city name - passing the city name to a function that adds the API key and calls the OpenWeatherMap API - Receives the responses and passes it back to the python application, without ever revealing the API key.[^22]
+
+**5. The User Experience:** This challenge had a significant impact on the experience of my test users, as they couldn't even initially access the application. Even after addressing the issue, test users noted that having to wait upwards of half an hour for the API key activation before they could even access the weather app was a significant deterrence, and undermined the convenience of the application.
+
+Should the proposed improvement of removing the user requirement of installing their own API key be completed, user feedback on the difference in experience would be requested.
+
+### Multi-Name and Duplicate Name Cities
+
+**1. The Challenge:** During manual testing, I quickly discovered that using cities that shared their name with other cities, or using city names with more than one word in them would often yield undesired results. Moreover, due to the geocoding function of OpenWeatherMap being depreciated, the documentation for addressing this issue was not particularly clear.
+
+**2. The Impact:** Inefficient use of time. If test driven development had been used from the start, addressing this issue would have been much easier. Since it wasn't, I was left trying to figure out how to refactor code I had already thought to be complete. Initially, I found OpenWeatherMap provided a prebuilt json with the names and co-ordinates of thousands of cities, and I planned on importing this as a dictionary and having the user input reference the dictionary to provide correct details for the API call.
+
+However, although this addressed the issue of multi-name cities and duplicate cities across different countries, it did not address duplicate cities within the same country. An example of this is my own hometown, Richmond:
+
+```python
+{
+    "id": 2151639,
+    "name": "Richmond Plains",
+    "state": "",
+    "country": "AU",
+    "coord": {
+        "lon": 143.449997,
+        "lat": -36.383331
+    }
+},
+{
+    "id": 2151649,
+    "name": "Richmond",
+    "state": "",
+    "country": "AU",
+    "coord": {
+        "lon": 145.001755,
+        "lat": -37.818192
+    }
+},
+{
+    "id": 2151650,
+    "name": "Richmond",
+    "state": "",
+    "country": "AU",
+    "coord": {
+        "lon": 150.766663,
+        "lat": -33.599998
+    }
+}
+```
+
+As seen above, there's no way to identify which of the two Richmond's is my hometown. Not only this, it significantly complicates the ability to identify multi-name cities using a single name.
+
+**3. The Solution:** Formatting the code to accept letters, spaces and commas only and replacing spaces with commas to correctly query the API when using multi word cities:
+
+```python
+try:
+                    for char in city: # Check if the city name contains only alphabetic characters
+                        if not char.isalpha() and char not in (" ", ","):
+                            raise ValueError(
+                                "City name must contain letters, spaces or commas only"
+                                )
+                    city = city.replace(" ", ",")  # Swap spaces with commas for multi-word cities
+                    weather_data = service.get_weather_data(city)
+```
+
+I also provided the following instructions in the terminal output as well as the Readme instructions:
+`If the city shares its name, add the ISO 3166 state and country code, (e.g. "melbourne nsw au").`
+
+**4. The Improvements:** As mentioned above, if the code had been written from the beginning using test driven development, the issue would have been caught earlier and less re-formatting would have been required. This could have been achieved by creating a large array of city names and running an automated test to assert that cities selected from the array matched their expected co-ordinates.
+
+A look-up table could have been implemented for city names, querying the API with the city name if only one city matched the name input, or returning a list of all matching cities by name, showing their country and state and allowing the user to select by number.
+
+### Lack of Test Driven Development
+
+**1. The Challenge:** As touched on above, missing the module on testing meant that this CLI application was not built in line with test driven development from the beginning. Tests for the application was written after the fact, and the application was written without following the red-green-refactor cycle.
+
+**2. The Impact:** During the development process, there were many instances in which momentum was lost deciding what to build next. The early phase of the application was particularly intimidating, with no real idea of where to begin, and the order of which the application was build was less than optimal.
+
+Test coverage of the application had many gaps in retrospect, and although the manual testing I did was very thorough, after retroactively designing tests for the application it's clear that the testing was not as robust as it could have been.
+
+**3. The Solution:** Retroactively added unit testing, integration testing and smoke testing, examples of which are referenced in the 'Standard Testing Process' section. I also looked at sections of my completed code and established how they would have been written if I had been following TDD, an example of which was provided in the 'Test Driven Development' section.
 
 [^1]: [2022 StackOverflow Survey](https://survey.stackoverflow.co/2022/#section-version-control-version-control-systems)
 [^2]: [Git vs SVN - Nulab](https://nulab.com/learn/software-development/git-vs-svn-version-control-system/)
@@ -402,3 +505,7 @@ Further improvements to the code could be made by adding context to the time sta
 [^16]: [Integration Testing - FullStackPython](https://www.fullstackpython.com/integration-testing.html)
 [^17]: [Smoke Testing - Guru99](https://www.guru99.com/smoke-testing.html)
 [^18]: [Test Driven Development - Circleci](https://circleci.com/blog/test-driven-development-tdd/#:~:text=Test,testing%20an%20ongoing%2C%20iterative%20process)
+[^19]: [401 Error Code - Mozilla](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/401)
+[^20]: [Automated API Testing - Functionize](https://www.functionize.com/automated-testing/automated-api-testing)
+[^21]: [API Key Free Weather Call - Open Meteo](https://open-meteo.com/)
+[^22]: [Invoke Lambda Function Through API Gateway - Amazon](https://docs.aws.amazon.com/lambda/latest/dg/services-apigateway.html)
