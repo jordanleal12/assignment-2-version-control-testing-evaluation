@@ -298,6 +298,92 @@ Although verbose, the above process is fairly simple:
 - App output is captured by `capsys.readouterr()`
 - The output is asserted by pytest to ensure that the output matches expectations
 
+## Test Driven Development
+
+Test driven development (TDD) is the practice of writing tests for your code _before_ writing the code, with the expectation of failure. The code is then written after the fact until the test is passed. The three steps of TDD are as follows:
+**1. Test (Red Stage):** A test is designed for a _single key element_ of your code, with the expectation of failure.
+**2. Code (Green Stage):** The code required to pass the test is written, ideally to the lowest required standard of passing the test.
+**3. Refactor:** The completed code is refactored to be more efficient and inline with desired functionality.[^18]
+
+Using TDD allows for a much more mindful path for writing code. Rather than being stuck trying to determine which part of the code to work on next - Assess a basic required functionality, create a test for it, then add code until you can pass that test.
+
+We can look at some examples using the CLI application below:
+
+**Test stage -** The element we desire to test in this case is an extension checker, which takes the user input for desired file name and checks that is has the correct extension. As this has multiple functionalities, we will specifically design a test for the element that adds the correct file extension if it isn't provided with the filename.
+
+The test is as follows:
+
+```python
+def test_adds_missing_extension():
+    # GIVEN a filename without “.csv”
+    filename = "data"
+    # WHEN I run extension_checker
+    result = extension_checker(filename, ".csv")
+    # THEN it should tack on “.csv”
+    assert result == "data.csv"
+```
+
+After running the test in pytest, it spits out the following - `FAILED tests/test_extension_checker.py::test_adds_missing_extension - AssertionError: assert None == 'data.csv'`
+
+**Code Stage -** Now we write the code required to pass the test:
+
+```python
+def extension_checker(filename, f_type)
+    ext = os.path.splitext(filename)[1]
+    filename += f_type
+    return filename
+```
+
+After running the above code in pytest, we get a message letting us know it passes the test!
+
+**Refactor Stage -** After achieving the bare minimum required functionality to pass the test, we can now refactor the code, increasing readability and functionality:
+
+```python
+def extension_checker(filename: str, f_type: str) -> str:
+    """Checks the file extension and returns the filename with the correct extension."""
+
+    ext = os.path.splitext(filename)[1].lower() # Get the file extension from the filename
+    if not ext:
+        print(f"Missing file extension, adding {f_type}")
+        filename += f_type # Add the correct file extension if missing
+    return filename
+```
+
+We can now repeat the above steps for the functionality of replacing an incorrect file path input with the correct one! after repeating the three steps again our completed function will look like this:
+
+```python
+def extension_checker(filename: str, f_type: str) -> str:
+    """Checks the file extension and returns the filename with the correct extension."""
+
+    ext = os.path.splitext(filename)[1].lower() # Get the file extension from the filename
+    if ext and ext != f_type:
+        print(f"Invalid file extension, converting to {f_type}")
+        filename = filename.replace(ext, f_type) #replace the existing extension with the correct one
+    if not ext:
+        print(f"Missing file extension, adding {f_type}")
+        filename += f_type # Add the correct file extension if missing
+    return filename
+```
+
+## Challenges & Potential Improvements for Project Software Testing
+
+As my first ever CLI python application, there was inevitably countless challenges and potential improvements for the testing process. As such, I'll focus on the five most relevant challenges, outlining the challenge I faced, the impact it had on the project, what I did to fix it and how my process could be improved in the future.
+
+Considering our cohort skipped the unit on testing prior to building our CLI applications, many parts of the application that where tested manually could have been significantly expedited using automated testing. Writing the code using TDD practices would have also been significantly beneficial to providing direction, as there were many times I was stuck thinking "now what?".
+
+### Parsing Local DateTime from API
+
+**1. The Challenge:** When processing and retrieving datetime using the API call, then converting to localized datetime, the time was inaccurate, usually roughly ~5 minutes behind. For example if I was to get a weather report for Sydney, I could see that the timestamp was behind what my local time was.
+**2. The Impact:** I spent hours going over my code looking for bugs, refactoring things to try and get it to work and browsing forums as well as the OpenWeatherMap API docs - convinced it was an issue with my code!
+**3. The Solution:** After finally discovering the issue wasn't with my code, but rather that the API only received weather updates every 5-10 minutes, I added information to my Readme page so that the user would be made aware.
+**4. The Improvements:** The most vital part of this challenge I faced is that it all could have been avoided with the use of correct testing procedure. Using requests_mock and pytest, I could have designed a unit test and integration test to provide a fake json response from my API and test if my code was processing the received datetime information correctly. This would have isolated that the issue was coming from the API end rather than my code, expediting the trouble shooting process. The 'Integration Testing' example under the 'Standard Testing Procedure' provides an example of the appropriate test.
+
+Further improvements to the code could be made by adding context to the time stamp - eg. "Weather Data last updated x minutes ago", using the DateTime module to compare the timestamp to the current time.
+
+### API Key Activation and Error Handling
+
+**1. The Challenge:**
+
 [^1]: [2022 StackOverflow Survey](https://survey.stackoverflow.co/2022/#section-version-control-version-control-systems)
 [^2]: [Git vs SVN - Nulab](https://nulab.com/learn/software-development/git-vs-svn-version-control-system/)
 [^3]: [Branching & Merging - Git](https://git-scm.com/about/branching-and-merging)
@@ -315,3 +401,4 @@ Although verbose, the above process is fairly simple:
 [^15]: [What is Unit Testing? - Brightsec](https://www.brightsec.com/blog/unit-testing/#:~:text=What%20Is%20Unit%20Testing%3F)
 [^16]: [Integration Testing - FullStackPython](https://www.fullstackpython.com/integration-testing.html)
 [^17]: [Smoke Testing - Guru99](https://www.guru99.com/smoke-testing.html)
+[^18]: [Test Driven Development - Circleci](https://circleci.com/blog/test-driven-development-tdd/#:~:text=Test,testing%20an%20ongoing%2C%20iterative%20process)
