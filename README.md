@@ -79,7 +79,7 @@ git checkout -b [branch_name]
 with the words following `-b` being the name of the new branch.[^12]
 
 **2. Make changes**
-Each new branch is a safe place for making changes without worrying about the main branch. GitHub flow dictates that for each isolated, complete change in the branch, said changes should be staged then committed, ensuring easy reversion if required, and making new changes distinct and readable when merging to main branch. Each commit should contain a concise, descriptive message outline the changes made. The commands for WSL users is as follows:
+Each new branch is a safe place for making changes without worrying about the main branch. GitHub flow dictates that for each isolated, complete change in the branch, said changes should be staged then committed, ensuring easy reversion if required, and making new changes distinct and readable when merging to main branch. Each commit should contain a concise, descriptive message outlining the changes made. The commands for WSL users is as follows:
 
 ```bash
 git add . #This stages all files
@@ -111,7 +111,7 @@ From the main page of the repository located on GitHub, select the relevant bran
 This will take you to the branch page, showing the branch files with a yellow banner above them to create the pull request:
 ![Pull-request button](image-3.png)
 
-Ensure that the two drop down menu's denote the branch you desire to merge with an arrow pointing to the main branch to be merged into. Add a short descriptive title, and fill in the markdown supported description, ensuring to add as much detail as required for collaborators to easily understand your changes. [^14]
+Ensure that the two drop down menu's denote the branch you desire to merge, with an arrow pointing to the main branch to be merged into. Add a short descriptive title, and fill in the markdown supported description, ensuring to add as much detail as required for collaborators to easily understand your changes. [^14]
 
 **4. Review feedback**
 Lead collaborators working on the project will provide feedback on the pull request, either approving it or requesting specific changes. Changes can still be committed and pushed to the relevant branch, in response to feedback with the description being updated and adding comments accordingly, until approval to merge is received.
@@ -127,21 +127,24 @@ Since every pull, commit and messaged is safely recorded, there's no reason to k
 
 ## How My Project Utilized Source Control
 
-The example of my application of source control will reference my previous CLI custom software application. The history of commits and commit messages can be found [on this GitHub page.](https://github.com/jordanleal12/assignment-2-custom-software/commits/main/)
+The example of my use of source control will reference my previous CLI custom software application. The history of commits and commit messages can be found [on this GitHub page.](https://github.com/jordanleal12/assignment-2-custom-software/commits/main/)
 
 As a solo project, it could be thought that there is no need to use proper source control procedure. This is incorrect, and as such I will illustrate the usage of source control in this project, and the benefits of doing so even on a solo project.
 
-**1. Detailed commit messages:** On solo projects, this is still important when referencing work in the future or when working on a large complex project where memory cannot be relied upon. Here are some examples of sufficiently detailed commits and their messages from my project:
+**1. Detailed commit messages:** On solo projects, this is still important when referencing your own work in the future, or when working on a large complex project where memory cannot be relied upon. Here are some examples of sufficiently detailed commits and their messages from my project:
 ![example commit messages](image-7.png)
 
 **2. Making a commit for each isolated, complete change:** Even on a solo project, isolated complete commits allow for far greater readability of code changes, easier revision of code and greater isolation for bug fixes. In the provided example below, you can see the complete isolated change is the addition of a single function, with the name and purpose of function provided, and a relevant update to the Readme.
 ![Single isolated change example](image-8.png)
 
-**3. Utilizing branching and merging:** Although this may seem counter-intuitive for solo projects where only one person will be working on the code at any given time, creating branches still has many benefits. Isolating new features can provide easier bug fixing and identification, allow the main code to be expanded upon while temporarily shelving an incomplete branch, and allowing for the building of a basic, safe functional base code while still having the ability to safely add complexity and greater functionality.
+**3. Utilizing branching and merging:** Although this may seem counter-intuitive for solo projects where only one person will be working on the code at any given time, creating branches still has many benefits. Isolating new features can provide easier bug fixing and identification, allow the main code to be expanded upon while temporarily shelving an incomplete branch. It also allows for the building of a basic, safe and functional base code, while still having the ability to safely add complexity and functionality.
+
 As can be seen below, a new branch was created for each implementation of a new testing procedure for my project:
 ![New branch message](image-9.png)
 
-**4. Detailed pull request descriptions:** An additional benefit to using branches is the ability to add markdown flavoured descriptions of each branch to be merged with the main branch. Although commit messages are useful for adding context, pull request descriptions provide a picture of the functionality of the whole branch and the sum of its commits. The ability to add images, links, tables etc. in markdown grant a much greater descriptive ability than commit messages alone could. An example of a detailed pull request from my project can be found [in this GitHub page.](https://github.com/jordanleal12/assignment-2-custom-software/pull/2)
+**4. Detailed pull request descriptions:** An additional benefit to using branches is the ability to add markdown flavoured descriptions for each branch to be merged. Although commit messages are useful for adding context, pull request descriptions provide a picture of the functionality of the whole branch and the sum of its commits.
+
+The ability to add images, links, tables etc. in markdown grant a much greater descriptive ability than commit messages alone could. An example of a detailed pull request from my project can be found [in this GitHub page.](https://github.com/jordanleal12/assignment-2-custom-software/pull/2)
 
 ## Standard Testing Process
 
@@ -149,7 +152,8 @@ Testing is a vital part of development - ensuring functioning code and identifyi
 
 ### 1. Unit testing
 
-Unit testing is a zoomed in form of testing that focuses on specific entities in the code - being classes, functions etc, and ensuring that they function as expected given known data.
+Unit testing is a zoomed in form of testing that focuses on specific entities in the code - being classes, functions etc, and ensuring that they function as expected when given known data.
+
 One of the most common tools used for unit testing is Pytest, which uses mock data to simulate parts of the code, isolating the entity as much as possible and asserting the output matches expectations.[^15]
 
 An example of use in my code is as follows:
@@ -166,13 +170,14 @@ def test_convert_time(monkeypatch):
 ```
 
 As we can see above, Pytest and Monkeypatch are being used to test the function `convert_time`. Monkey patch is being used to simulate output from the `get_timezone` and return "UTC" always. This isolates the `convert_time` function from the `get_timezone` function, helping us test its output without calling other functions.
+
 A known unix timestamp is then passed to the function, and Pytest is used to assert that the function converts and returns the expected value correctly.
 
 ### 2. Integration Testing
 
 A step up in complexity, integration testing tests two or more entities simultaneously, as well as their interaction with each other. To put it more simply, if unit testing tests a single unit, integration testing tests multiple units working together.[^16]
-Of course this can make it more difficult to isolate the precise issue when integration testing fails - it is for this reason that integration testing and unit testing work hand in hand to help identify and isolate faults in the code.
-Pytest can also be used for integration testing, often alongside other modules required to emulate parts of the code (such as API calls).
+
+Of course this can make it more difficult to isolate the precise issue when integration testing fails - it is for this reason that integration testing and unit testing work hand in hand to help identify and isolate faults in the code. Pytest can also be used for integration testing, often alongside other modules required to emulate parts of the code (such as API calls).
 
 An example of use in my code is as follows:
 
@@ -223,9 +228,11 @@ def test_get_weather_data_success(requests_mock, monkeypatch):
     )
 ```
 
-The above tests the functionality of the `get_weather_data` method and `convert_time` function in tandem. A fake json is created to mimic data passed from the API, allowing us to bypass the API call for more isolated testing. Since the `convert_time` function has already been unit tested, rather than replacing it out with monkeypatch we can test its integration with the `get_weather_data` method at this point to, feeding it a unix timestamp from the fake json.
+The above code tests the functionality of the `get_weather_data` method and `convert_time` function in tandem. A fake json is created to mimic data passed from the API, allowing us to bypass the API call for more isolated testing.
 
-Normally the `get_weather_data` method will use requests.get to contact the API, however for the integration test we replace that with requests_mock.get, which gives a pre-determined response without actually contacting the API. This allows us to test with consistent input.
+Since the `convert_time` function has already been unit tested, rather than replacing it with monkeypatch, we can test its integration with the `get_weather_data` method at this point, feeding it a unix timestamp from the fake json.
+
+Normally the `get_weather_data` method will use requests.get to contact the API, however for the integration test we replace that with requests_mock.get, which gives a pre-determined response without actually contacting the API. This allows us to test with controlled input.
 
 The result is the creation of an instance of the parent class `WeatherService`, which calls the `get_weather_data` method. We fake the URL request using requests_mock and pass the method the fake json, using pytest to assert that each piece of the output has been processed correctly by both functions. 'UTC' or 'GMT' are both accepted as it's the same timezone which some systems label differently.
 
@@ -294,18 +301,21 @@ Although verbose, the above process is fairly simple:
 - The API call is bypassed using `monkeypatch.setattr` and a fixed fake response is received
 - The real terminal output is replaced with the `DummyHandler` class, to allow testing of the output
 - The user inputs are faked using `monkeypatch.setattr` and the `InputDriver` class to simulate menu selection and city name entry
-- The app is run, and calls `exit()` is raised to test app exiting
+- The app is run, and `exit()` is called to test app exiting
 - App output is captured by `capsys.readouterr()`
 - The output is asserted by pytest to ensure that the output matches expectations
 
 ## Test Driven Development
 
 Test driven development (TDD) is the practice of writing tests for your code _before_ writing the code, with the expectation of failure. The code is then written after the fact until the test is passed. The three steps of TDD are as follows:
+
 **1. Test (Red Stage):** A test is designed for a _single key element_ of your code, with the expectation of failure.
+
 **2. Code (Green Stage):** The code required to pass the test is written, ideally to the lowest required standard of passing the test.
+
 **3. Refactor:** The completed code is refactored to be more efficient and inline with desired functionality.[^18]
 
-Using TDD allows for a much more mindful path for writing code. Rather than being stuck trying to determine which part of the code to work on next - Assess a basic required functionality, create a test for it, then add code until you can pass that test.
+Using TDD allows for a much more mindful path for writing code. Rather than being stuck trying to determine which part of the code to work on next - decide on a basic required functionality, create a test for it, then add code until you can pass that test.
 
 We can look at some examples using the CLI application below:
 
@@ -323,7 +333,8 @@ def test_adds_missing_extension():
     assert result == "data.csv"
 ```
 
-After running the test in pytest, it spits out the following - `FAILED tests/test_extension_checker.py::test_adds_missing_extension - AssertionError: assert None == 'data.csv'`
+After running the test in pytest, it spits out the following -
+`FAILED tests/test_extension_checker.py::test_adds_missing_extension - AssertionError: assert None == 'data.csv'`
 
 **Code Stage -** Now we write the code required to pass the test:
 
@@ -349,7 +360,7 @@ def extension_checker(filename: str, f_type: str) -> str:
     return filename
 ```
 
-We can now repeat the above steps for the functionality of replacing an incorrect file path input with the correct one! after repeating the three steps again our completed function will look like this:
+We can now repeat the above steps, adding the ability to replace an incorrect file path input with the correct one! after repeating the three steps again our completed function will look like this:
 
 ```python
 def extension_checker(filename: str, f_type: str) -> str:
@@ -367,27 +378,40 @@ def extension_checker(filename: str, f_type: str) -> str:
 
 ## Incorporating Testing Within Recent Project
 
-As my first ever CLI python application, there was inevitably countless challenges and potential improvements for the testing process. As such, I'll focus on the four most relevant challenges, outlining the challenge I faced, the impact it had on the project, what I did to fix it and how my process could be improved in the future.
+As my first ever CLI python application, there was inevitably countless challenges and potential improvements for the testing process. As such, I'll focus on the four most relevant challenges, outlining the following:
 
-Considering our cohort skipped the unit on testing prior to building our CLI applications, many parts of the application that where tested manually could have been significantly expedited using automated testing. Writing the code using TDD practices would have also been significantly beneficial to providing direction, as there were many times I was stuck thinking "now what?".
+- The challenge I faced
+- The impact it had on the project
+- What I did to fix it
+- How my process could be improved in the future
+- User stories/plans involved in testing
+- How each challenge related to ethical principles of web/software design
 
 ### Parsing Local DateTime from API
 
-**1. The Challenge:** When processing and retrieving datetime using the API call, then converting to localized datetime, the time was inaccurate, usually roughly ~5 minutes behind. For example if I was to get a weather report for Sydney, I could see that the timestamp was behind what my local time was.
+**1. The Challenge:**
+When processing and retrieving datetime using the API call and converting to localized datetime, the time was usually roughly ~5 minutes behind. For example, if I was to get a weather report for Sydney, I could see that the timestamp was behind what my local time was.
 
-**2. The Impact:** I spent hours going over my code looking for bugs, refactoring things to try and get it to work and browsing forums as well as the OpenWeatherMap API docs - convinced it was an issue with my code!
+**2. The Impact:**
+I spent hours going over my code looking for bugs, refactoring things to try and get it to work and browsing forums and the OpenWeatherMap API docs - convinced it was an issue with my code! This issue undermined the legitimacy of the data I was providing to the user.
 
-**3. The Solution:** After finally discovering the issue wasn't with my code, but rather that the API only received weather updates every 5-10 minutes, I added information to my Readme page and terminal output so that the user would be made aware.
+**3. The Solution:**
+After finally discovering the issue wasn't with my code, but rather that the API only received weather updates every 5-10 minutes, I added information to my Readme page and terminal output so that the user would be made aware.
 
-**4. The Improvements:** The most vital part of this challenge I faced is that it all could have been avoided with the use of correct testing procedure. Using requests_mock and pytest, I could have designed a unit test and integration test to provide a fake json response from my API and test if my code was processing the received datetime information correctly. This would have isolated that the issue was coming from the API end rather than my code, expediting the trouble shooting process. The 'Integration Testing' example under the 'Standard Testing Procedure' provides an example of the appropriate test.
+**4. The Improvements:**
+The most vital part of this is that it all could have been avoided with the use of correct testing procedure. Using requests_mock and pytest, I could have designed a unit and integration test to provide a fake json response from my API and test if my code was processing the received datetime information correctly.
 
-Further improvements to the code could be made by adding context to the time stamp - eg. "Weather Data last updated x minutes ago", using the DateTime module to compare the timestamp to the current time.
+This would have isolated that the issue was coming from the API end rather than my code, expediting the trouble shooting process. The [Integration Testing](#2-integration-testing) example under [Standard Testing Process](#standard-testing-process) provides an example of the appropriate test.
 
-**5. The User Experience:** Initially, feedback was received that the time stamp wasn't accurate. Test users mentioned that this gave them concerns for the reliability of the application, if that part wasn't accurate what else might not be accurate? After updating the Readme and terminal output explaining the time difference, the test users made no further mention.
+Further improvements to the code could be made by adding context to the time stamp - eg. adding `Weather Data last updated x minutes ago` to the output, using the DateTime module to compare the timestamp to the current time.
 
-If the implementation of adding context to the timestamp as mentioned above was to go ahead, user feedback would be requested to see if it garnered a more positive response.
+**5. The User Experience:**
+Initially, feedback was received that the time stamp wasn't accurate. Test users mentioned that this gave them concerns for the reliability of the application, if that part wasn't accurate what else might not be accurate? After updating the Readme and terminal output explaining the time difference, the test users made no further mention.
 
-**6. Ethical Considerations:** Referring to Code of Ethics (COE)[^19] and Ethical Web Principles (EWP)[^20]
+If I was to implement adding context to the timestamp as mentioned above, user feedback would be requested to see if it garnered a more positive response.
+
+**6. Ethical Considerations:**
+Referring to Code of Ethics (COE)[^19] and Ethical Web Principles (EWP)[^20]
 
 - **COE 1.06 - Avoid deception:** By initially not providing the context for the difference in the localized time received by the user and the actual time, I misled the user with the claim of "current" weather data and time. Such errors can have legal ramifications when delivering applications as a real service in the industry.
 - **EWP 2.10 - Transparency:** Initially, the information about the time difference was only available in the Readme, which lacked transparency. Alerting users in the terminal output addressed this issue.
@@ -395,42 +419,60 @@ If the implementation of adding context to the timestamp as mentioned above was 
 
 ### API Key Activation and Error Handling
 
-**1. The Challenge:** Part of my testing procedure was providing my completed code to some friends of mine, having them follow the Readme instructions, and having them attempt to use the application start to finish - a manual smoke test using beta testers on different devices and operating systems. The testing ran into an early speed-bump, being that any request made returned the following errors:
+**1. The Challenge:**
+Part of my testing procedure was to provide my completed code to some friends of mine, having them follow the Readme instructions, and having them attempt to use the application start to finish - a manual smoke test using beta testers on different devices and operating systems. The testing ran into an early speed-bump, being that any request made returned the following errors:
 
 ```
 HTTP Error: 401 - Unauthorized
 Value Error: No data found for the specified city.
 ```
 
-**2. The Impact:** A quick search revealed that a 401 error is provided when the request lacks valid authentication credentials.[^21] Initially, I thought this to be an easy fix, I hadn't added instructions for the tester to verify their email upon sign-up for their API key, and after adding this to the Readme I was assured this would be fixed. However, even after verifying the user email, the same error was being returned. Moreover, when creating new accounts myself I was receiving the same error.
+**2. The Impact:**
+A quick search revealed that a 401 error is provided when the request lacks valid authentication credentials.[^21] Initially, I thought this to be an easy fix, as I hadn't added instructions for the tester to verify their API key via email on sign-up, and after adding this to the Readme I was assured this would be fixed. However, even after verifying the user email, the same error was being returned. Moreover, when creating new accounts myself I was receiving the same error.
 
-This led me down another wild goose chase - manually adding API keys to requests in the browser, searching through code, researching .env integration etc. To add further confusion, some of the API keys had no started working, while others continued to not work. Eventually this led me to realize that the error was being caused by a ~30-60 minute delay between receiving the API key and the key being activated.
+This led me down another wild goose chase - manually adding API keys to requests in the browser, searching through code, researching .env integration etc. To add further confusion, some of the API keys had now started working, while others continued to not work. Eventually this led me to realize that the error was being caused by a ~30-60 minute delay between receiving the API key and the key being activated.
 
-**3. The Solution:** After realizing that the issue was with the delay for activation rather than a code error, the Readme was updated to convey this new information, and a pre-activated API key was provided in the Readme purely for testing purposes (this would not be included in a real release for security reasons).
+This had a severe impact on the usability of the application, with my beta testers not even being able to test any of the main features until this was addressed.
 
-**4. The Improvements** This is another example of how using proper testing procedure could have caught the cause of the error much earlier. Using requests_mock to create tests simulating API response without actually contacting the API would have allowed my beta testers to confirm that the code ran correctly on their local instances. This would have allowed us to isolate the API call as a problem on the API side.
+**3. The Solution:**
+After realizing that the issue was with the delay for activation rather than a code error, the Readme was updated to convey this new information, and a pre-activated API key was provided in the Readme purely for testing purposes (this would not be included in a real release for security reasons).
+
+**4. The Improvements**
+This is another example of how using proper testing procedure could have caught the cause of the error much earlier. Using requests_mock to create tests simulating API response, without actually contacting the API, would have allowed my beta testers to confirm that the code ran correctly on their local instances. This would have allowed us to isolate the API call as a problem on the API side.
 
 Another improvement to be made in the testing procedure is a more thorough user smoke-test before sending the application off to beta testers. Although this application was smoke tested by me, I did not sign up as a new user to OpenWeatherMap, and used my existing API key, something that would have highlighted the issue much earlier. Implementation of proper API testing guidelines [as found here](https://www.functionize.com/automated-testing/automated-api-testing), would have improved and standardized my testing approach.[^22]
 
-Finally, removing the process of having the user sign up for an API key altogether would significantly improve user experience. This could be done through two methods - transferring the API call over to a site that doesn't require an API key (eg. open-meteo)[^23]. Alternatively, using a serverless proxy to add the API key to the request in the backend, where it can't be accessed by users.
+Finally, removing the process of having the user sign up for an API key altogether would significantly improve user experience. This could be done through two methods - the first being to transfer the API call over to a site that doesn't require an API key (eg. open-meteo)[^23]. Alternatively, using a serverless proxy to add the API key to the request in the backend, where it can't be accessed by users.
 
-This could be done through methods such as using an API Gateway through AWS Lambda - sending a request from the application to the API Gateway - parsing the request and extracting the city name - passing the city name to a function that adds the API key and calls the OpenWeatherMap API - Receives the responses and passes it back to the python application, without ever revealing the API key.[^24]
+This could be done through methods such as using an API Gateway via AWS Lambda, as follows:
 
-**5. The User Experience:** This challenge had a significant impact on the experience of my test users, as they couldn't even initially access the application. Even after addressing the issue, test users noted that having to wait upwards of half an hour for the API key activation before they could even access the weather app was a significant deterrence, and undermined the convenience of the application.
+- Sending a request from the application to the API Gateway
+- Parsing the request and extracting the city name
+- Passing the city name to a function that adds the API key and calls the OpenWeatherMap API
+- Receiving the responses and passing it back to the python application, without ever revealing the API key.[^24]
 
-Should the proposed improvement of removing the user requirement of installing their own API key be completed, user feedback on the difference in experience would be requested.
+**5. The User Experience:**
+This challenge had a significant impact on the experience of my test users, as they couldn't even initially access the application. Even after addressing the issue, test users noted that having to wait upwards of half an hour for the API key activation before they could even access the weather app was a significant deterrence, and undermined the convenience of the application.
 
-**6. Ethical Considerations:** Referring to Code of Ethics (COE)[^19] and Ethical Web Principles (EWP)[^20]
+Should the proposed improvement (removing the user requirement to install and activate their own API key) be completed, user feedback on the difference in experience would be requested.
+
+**6. Ethical Considerations:**
+Referring to Code of Ethics (COE)[^19] and Ethical Web Principles (EWP)[^20]
 
 - **EWP 2.5 - Secure and private:** Although the pre-provided API key was for testing only, including it in the public Readme risks violating security principles. Implementing the proposed workarounds for API key access would remove the need for providing said API in the Readme.
+- **EWP 2.4 - Web for all people:** Requiring the user to sign up and validate the API key increases the level of technical literacy required to use this application. Removing this hurdle would significantly improve accessability
 
 ### Multi-Name and Duplicate Name Cities
 
-**1. The Challenge:** During manual testing, I quickly discovered that using cities that shared their name with other cities, or using city names with more than one word in them would often yield undesired results. Moreover, due to the geocoding function of OpenWeatherMap being depreciated, the documentation for addressing this issue was not particularly clear.
+**1. The Challenge:**
+During manual testing, I quickly discovered that using cities that shared their name with other cities, or using city names with more than one word in them, would often yield undesired results. Moreover, due to the geocoding function of OpenWeatherMap being depreciated, the documentation for addressing this issue was not particularly clear.
 
-**2. The Impact:** Inefficient use of time. If test driven development had been used from the start, addressing this issue would have been much easier. Since it wasn't, I was left trying to figure out how to refactor code I had already thought to be complete. Initially, I found OpenWeatherMap provided a prebuilt json with the names and co-ordinates of thousands of cities, and I planned on importing this as a dictionary and having the user input reference the dictionary to provide correct details for the API call.
+**2. The Impact:**
+Inefficient use of time. If test driven development had been used from the start, addressing this issue would have been much easier. Since it wasn't, I was left trying to figure out how to refactor code I had already thought to be complete.
 
-However, although this addressed the issue of multi-name cities and duplicate cities across different countries, it did not address duplicate cities within the same country. An example of this is my own hometown, Richmond:
+Initially, I found OpenWeatherMap provided a prebuilt json with the names and co-ordinates of thousands of cities, and I planned on importing this as a dictionary and having the user input reference the dictionary to provide correct details for the API call.
+
+Although this addressed the issue of multi-name cities and duplicate cities across different countries, it did not address duplicate cities within the same country. An example of this is my own hometown, Richmond:
 
 ```python
 {
@@ -465,9 +507,10 @@ However, although this addressed the issue of multi-name cities and duplicate ci
 }
 ```
 
-As seen above, there's no way to identify which of the two Richmond's is my hometown. Not only this, it significantly complicates the ability to identify multi-name cities using a single name.
+The above references all instances of Richmond, Australia in the json (with 44 global instances), and there's no way to identify which of these Richmond's is my hometown. Not only this, it significantly complicates the ability to identify multi-name cities using a single name, as searching using just the first word of the city would return any additional instances of Richmond where its the first word. After review, the json does not even cover all instances of Richmond in Australia.
 
-**3. The Solution:** Formatting the code to accept letters, spaces and commas only and replacing spaces with commas to correctly query the API when using multi word cities:
+**3. The Solution:**
+Formatting the code to accept letters, spaces and commas only and replacing spaces with commas to correctly query the API when using multi word cities:
 
 ```python
 try:
@@ -483,39 +526,74 @@ try:
 I also provided the following instructions in the terminal output as well as the Readme instructions:
 `If the city shares its name, add the ISO 3166 state and country code, (e.g. "melbourne nsw au").`
 
-**4. The Improvements:** As mentioned above, if the code had been written from the beginning using test driven development, the issue would have been caught earlier and less re-formatting would have been required. This could have been achieved by creating a large array of city names and running an automated test to assert that cities selected from the array matched their expected co-ordinates.
+**4. The Improvements:**
+As mentioned earlier, if the code had been written from the beginning using test driven development, the issue would have been caught earlier and less re-formatting would have been required. This could have been achieved by creating a large array of city names and running an automated test to assert that cities selected from the array matched their expected co-ordinates.
 
 A look-up table could have been implemented for city names, querying the API with the city name if only one city matched the name input, or returning a list of all matching cities by name, showing their country and state and allowing the user to select by number.
 
-**5. The User Experience:** Prior to the implementation of the terminal output and Readme instructions for handling duplicate name cases and multi-name cities, the application was given to testers as something capable of fetching weather data from capital cities only (as they aren't effected by those edge cases). Despite this, testers still occasionally input city names that fit those edge cases, and noted that the returned values where not what they expected.
+The output could look something like this:
 
-This highlighted that users couldn't be expected to know which cities are capital cities or not, and would still try non-capital cities regardless. In those cases, returning incorrect data was more harmful than returning no data, despite the outputs of capital cities only being assured.
+```
+Enter city name for weather report (eg. Sydney):
+> Richmond
+Multiple instances of 'Richmond' found, enter country name or code (eg. Australia or AU)
+> Australia
+Select by number from the following:
+1. Richmond, NSW
+2. Richmond, VIC
+3. Richmond, QLD
+4. Richmond, TAS
+> 1
+Weather Data:
+    Location: Richmond
+    Temperature: 16.2°C
+    Humidity: 68%
+    Condition: overcast clouds
+    Local Time: 02-Jul-25 01:11 PM AEST
+    --------------------
+```
 
-After updating so that all city names could be handled, did not report incorrect data being returned, though it was noted that occasionally having to search for ISO 3166 codes for less familiar cities was irritating. In such a case, the implementation of the aforementioned look-up table and multi-level city selection would address these user concerns.
+**5. The User Experience:**
+Prior to implementing terminal output and Readme instructions for duplicate name and multi-name cities, the application was shipped to testers as useable on capital cities only (as they aren't effected by those edge cases). Despite this, testers still occasionally input city names that fit those edge cases, and noted that the returned values where not what they expected.
 
-**6. Ethical Considerations:** Referring to Code of Ethics (COE)[^19] and Ethical Web Principles (EWP)[^20]
+This highlighted that users couldn't be expected to know which cities are capital cities or not, and would still try non-capital cities regardless. In those cases, returning incorrect data was more harmful than returning no data, despite only assuring the application for use with capital cities.
 
-- **COE 3.14 - Data integrity:** Since the code initially provided to testers could provide inaccurate information when processing cities with shared names or multiple names, this did not adhere to principles of data integrity. Rectifying the processing of city names and providing context in the terminal output and Readme helped address this issue.
-- **EWP 2.4 - Web for all people** By requiring the user to identify ISO 3166 country codes to parse the correct city for cities with shared names, the application fails to accommodate for peoples with less access to education or ability to search for information. This issue could be addressed with the previously mentioned lookup table solution.
+After updating so that all city names could be handled, testers did not report incorrect data being returned, though it was noted that occasionally having to search for ISO 3166 codes for less familiar cities was irritating. In such a case, the implementation of the aforementioned look-up table and multi-level city selection would address these user concerns.
+
+**6. Ethical Considerations:**
+Referring to Code of Ethics (COE)[^19] and Ethical Web Principles (EWP)[^20]
+
+- **COE 3.14 - Data integrity:** Since the code initially provided to testers could provide inaccurate information when processing cities with duplicate or multiple names, this did not adhere to principles of data integrity. Rectifying the processing of city names and providing context in the terminal output and Readme helped address this issue.
+- **EWP 2.4 - Web for all people** By requiring the user to identify ISO 3166 country codes to identify the correct city for cities with shared names, the application fails to accommodate for those with less access to education or ability to search for information. This issue could be addressed with the previously mentioned lookup table solution.
 
 ### Lack of Test Driven Development
 
-**1. The Challenge:** As touched on above, missing the module on testing meant that this CLI application was not built in line with test driven development from the beginning. Tests for the application was written after the fact, and the application was written without following the red-green-refactor cycle.
+**1. The Challenge:**
+As our cohort missed the module on software testing prior to building this application, it was not built in line with test driven development from the beginning. Tests for the application where written after the fact, and the application was written without following the red-green-refactor cycle.
 
-**2. The Impact:** During the development process, there were many instances in which momentum was lost deciding what to build next. The early phase of the application was particularly intimidating, with no real idea of where to begin, and the order of which the application was build was less than optimal.
+**2. The Impact:**
+During the development process, there were many instances in which momentum was lost deciding what to build next. The early phase of the application was particularly intimidating, with no real idea of where to begin, and the order in which the application was built was less than optimal.
 
-Test coverage of the application had many gaps in retrospect, and although the manual testing I did was very thorough, after retroactively designing tests for the application it's clear that the testing was not as robust as it could have been.
+In retrospect, test coverage of the application had many gaps, and although the manual testing I did was very thorough, after retroactively designing tests for the application it's clear that the testing was not as robust as it could have been.
 
-**3. The Solution:** Retroactively added unit testing, integration testing and smoke testing, examples of which are referenced in the 'Standard Testing Process' section. I also looked at sections of my completed code and established how they would have been written if I had been following TDD, an example of which was provided in the 'Test Driven Development' section.
+**3. The Solution:**
+Retroactively added unit testing, integration testing and smoke testing, examples of which are referenced in the [Standard Testing Process](#standard-testing-process) section. I also looked at sections of my completed code and established how they would have been written if I had been following TDD, an example of which was provided in the [Test Driven Development](#test-driven-development) section.
 
-**4. The Solution:** For future projects, the principles of test driven development will be adhered to, and tests will be designed before/during the application creation rather than after. Appropriate types of testing will be selected from the standard testing procedures, depending on the application features (eg. API testing if the application utilizes API calls)
+**4. The Solution:**
+For future projects, the principles of test driven development will be adhered to, and tests will be designed before/during the application creation rather than after. Appropriate types of testing will be selected from the standard testing procedures, depending on the application features (eg. API testing if the application utilizes API calls)
 
-**5. The User Experience:** A lack of test driven development significantly impacted the user experience of my test users, notably through the emergence of many of the above mentioned errors that normally would have been captured prior to a beta version of the application being provided to testers.
+**5. The User Experience:**
+A lack of test driven development significantly impacted the user experience of my test users, notably through the emergence of many of the above mentioned errors that normally would have been captured prior to a beta version of the application being provided to testers.
 
-**6. Ethical Considerations:** Referring to Code of Ethics (COE)[^19] and Ethical Web Principles (EWP)[^20]
+**6. Ethical Considerations:**
+Referring to Code of Ethics (COE)[^19] and Ethical Web Principles (EWP)[^20]
 
 - **COE 3.10 - Adequate testing, debugging and review:** As this application was designed without correctly adhering to the principles of test driven development, it does not uphold this ethical requirement to the highest standard. Retroactive testing has helped to rectify this flaw, and it is noted for future developments.
 - **COE 8.05 - Improve knowledge of standards:** Through the process of reviewing testing procedure for this application, I have significantly improved my understanding of the standards required for test driven development.
+
+## Main Application Testing
+
+Although some of the testing used was covered in [Standing Testing Process](#standard-testing-process), we will re-iterate the two main tests used for testing main application features.
 
 [^1]: [2022 StackOverflow Survey](https://survey.stackoverflow.co/2022/#section-version-control-version-control-systems)
 [^2]: [Git vs SVN - Nulab](https://nulab.com/learn/software-development/git-vs-svn-version-control-system/)
