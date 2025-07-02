@@ -387,6 +387,12 @@ Further improvements to the code could be made by adding context to the time sta
 
 If the implementation of adding context to the timestamp as mentioned above was to go ahead, user feedback would be requested to see if it garnered a more positive response.
 
+**6. Ethical Considerations:** Referring to Code of Ethics (COE)[^19] and Ethical Web Principles (EWP)[^20]
+
+- **COE 1.06 - Avoid deception:** By initially not providing the context for the difference in the localized time received by the user and the actual time, I misled the user with the claim of "current" weather data and time. Such errors can have legal ramifications when delivering applications as a real service in the industry.
+- **EWP 2.10 - Transparency:** Initially, the information about the time difference was only available in the Readme, which lacked transparency. Alerting users in the terminal output addressed this issue.
+- **COE 6.07 - Accurate characteristics:** Integrating the proposed feature to show the difference between provided time and current time would give the user a more accurate assessment of the characteristics of the data being provided through the software.
+
 ### API Key Activation and Error Handling
 
 **1. The Challenge:** Part of my testing procedure was providing my completed code to some friends of mine, having them follow the Readme instructions, and having them attempt to use the application start to finish - a manual smoke test using beta testers on different devices and operating systems. The testing ran into an early speed-bump, being that any request made returned the following errors:
@@ -396,7 +402,7 @@ HTTP Error: 401 - Unauthorized
 Value Error: No data found for the specified city.
 ```
 
-**2. The Impact:** A quick search revealed that a 401 error is provided when the request lacks valid authentication credentials.[^19] Initially, I thought this to be an easy fix, I hadn't added instructions for the tester to verify their email upon sign-up for their API key, and after adding this to the Readme I was assured this would be fixed. However, even after verifying the user email, the same error was being returned. Moreover, when creating new accounts myself I was receiving the same error.
+**2. The Impact:** A quick search revealed that a 401 error is provided when the request lacks valid authentication credentials.[^21] Initially, I thought this to be an easy fix, I hadn't added instructions for the tester to verify their email upon sign-up for their API key, and after adding this to the Readme I was assured this would be fixed. However, even after verifying the user email, the same error was being returned. Moreover, when creating new accounts myself I was receiving the same error.
 
 This led me down another wild goose chase - manually adding API keys to requests in the browser, searching through code, researching .env integration etc. To add further confusion, some of the API keys had no started working, while others continued to not work. Eventually this led me to realize that the error was being caused by a ~30-60 minute delay between receiving the API key and the key being activated.
 
@@ -404,15 +410,19 @@ This led me down another wild goose chase - manually adding API keys to requests
 
 **4. The Improvements** This is another example of how using proper testing procedure could have caught the cause of the error much earlier. Using requests_mock to create tests simulating API response without actually contacting the API would have allowed my beta testers to confirm that the code ran correctly on their local instances. This would have allowed us to isolate the API call as a problem on the API side.
 
-Another improvement to be made in the testing procedure is a more thorough user smoke-test before sending the application off to beta testers. Although this application was smoke tested by me, I did not sign up as a new user to OpenWeatherMap, and used my existing API key, something that would have highlighted the issue much earlier. Implementation of proper API testing guidelines [as found here](https://www.functionize.com/automated-testing/automated-api-testing), would have improved and standardized my testing approach.[^20]
+Another improvement to be made in the testing procedure is a more thorough user smoke-test before sending the application off to beta testers. Although this application was smoke tested by me, I did not sign up as a new user to OpenWeatherMap, and used my existing API key, something that would have highlighted the issue much earlier. Implementation of proper API testing guidelines [as found here](https://www.functionize.com/automated-testing/automated-api-testing), would have improved and standardized my testing approach.[^22]
 
-Finally, removing the process of having the user sign up for an API key altogether would significantly improve user experience. This could be done through two methods - transferring the API call over to a site that doesn't require an API key (eg. open-meteo)[^21]. Alternatively, using a serverless proxy to add the API key to the request in the backend, where it can't be accessed by users.
+Finally, removing the process of having the user sign up for an API key altogether would significantly improve user experience. This could be done through two methods - transferring the API call over to a site that doesn't require an API key (eg. open-meteo)[^23]. Alternatively, using a serverless proxy to add the API key to the request in the backend, where it can't be accessed by users.
 
-This could be done through methods such as using an API Gateway through AWS Lambda - sending a request from the application to the API Gateway - parsing the request and extracting the city name - passing the city name to a function that adds the API key and calls the OpenWeatherMap API - Receives the responses and passes it back to the python application, without ever revealing the API key.[^22]
+This could be done through methods such as using an API Gateway through AWS Lambda - sending a request from the application to the API Gateway - parsing the request and extracting the city name - passing the city name to a function that adds the API key and calls the OpenWeatherMap API - Receives the responses and passes it back to the python application, without ever revealing the API key.[^24]
 
 **5. The User Experience:** This challenge had a significant impact on the experience of my test users, as they couldn't even initially access the application. Even after addressing the issue, test users noted that having to wait upwards of half an hour for the API key activation before they could even access the weather app was a significant deterrence, and undermined the convenience of the application.
 
 Should the proposed improvement of removing the user requirement of installing their own API key be completed, user feedback on the difference in experience would be requested.
+
+**6. Ethical Considerations:** Referring to Code of Ethics (COE)[^19] and Ethical Web Principles (EWP)[^20]
+
+- **EWP 2.5 - Secure and private:** Although the pre-provided API key was for testing only, including it in the public Readme risks violating security principles. Implementing the proposed workarounds for API key access would remove the need for providing said API in the Readme.
 
 ### Multi-Name and Duplicate Name Cities
 
@@ -477,6 +487,17 @@ I also provided the following instructions in the terminal output as well as the
 
 A look-up table could have been implemented for city names, querying the API with the city name if only one city matched the name input, or returning a list of all matching cities by name, showing their country and state and allowing the user to select by number.
 
+**5. The User Experience:** Prior to the implementation of the terminal output and Readme instructions for handling duplicate name cases and multi-name cities, the application was given to testers as something capable of fetching weather data from capital cities only (as they aren't effected by those edge cases). Despite this, testers still occasionally input city names that fit those edge cases, and noted that the returned values where not what they expected.
+
+This highlighted that users couldn't be expected to know which cities are capital cities or not, and would still try non-capital cities regardless. In those cases, returning incorrect data was more harmful than returning no data, despite the outputs of capital cities only being assured.
+
+After updating so that all city names could be handled, did not report incorrect data being returned, though it was noted that occasionally having to search for ISO 3166 codes for less familiar cities was irritating. In such a case, the implementation of the aforementioned look-up table and multi-level city selection would address these user concerns.
+
+**6. Ethical Considerations:** Referring to Code of Ethics (COE)[^19] and Ethical Web Principles (EWP)[^20]
+
+- **COE 3.14 - Data integrity:** Since the code initially provided to testers could provide inaccurate information when processing cities with shared names or multiple names, this did not adhere to principles of data integrity. Rectifying the processing of city names and providing context in the terminal output and Readme helped address this issue.
+- **EWP 2.4 - Web for all people** By requiring the user to identify ISO 3166 country codes to parse the correct city for cities with shared names, the application fails to accommodate for peoples with less access to education or ability to search for information. This issue could be addressed with the previously mentioned lookup table solution.
+
 ### Lack of Test Driven Development
 
 **1. The Challenge:** As touched on above, missing the module on testing meant that this CLI application was not built in line with test driven development from the beginning. Tests for the application was written after the fact, and the application was written without following the red-green-refactor cycle.
@@ -486,6 +507,15 @@ A look-up table could have been implemented for city names, querying the API wit
 Test coverage of the application had many gaps in retrospect, and although the manual testing I did was very thorough, after retroactively designing tests for the application it's clear that the testing was not as robust as it could have been.
 
 **3. The Solution:** Retroactively added unit testing, integration testing and smoke testing, examples of which are referenced in the 'Standard Testing Process' section. I also looked at sections of my completed code and established how they would have been written if I had been following TDD, an example of which was provided in the 'Test Driven Development' section.
+
+**4. The Solution:** For future projects, the principles of test driven development will be adhered to, and tests will be designed before/during the application creation rather than after. Appropriate types of testing will be selected from the standard testing procedures, depending on the application features (eg. API testing if the application utilizes API calls)
+
+**5. The User Experience:** A lack of test driven development significantly impacted the user experience of my test users, notably through the emergence of many of the above mentioned errors that normally would have been captured prior to a beta version of the application being provided to testers.
+
+**6. Ethical Considerations:** Referring to Code of Ethics (COE)[^19] and Ethical Web Principles (EWP)[^20]
+
+- **COE 3.10 - Adequate testing, debugging and review:** As this application was designed without correctly adhering to the principles of test driven development, it does not uphold this ethical requirement to the highest standard. Retroactive testing has helped to rectify this flaw, and it is noted for future developments.
+- **COE 8.05 - Improve knowledge of standards:** Through the process of reviewing testing procedure for this application, I have significantly improved my understanding of the standards required for test driven development.
 
 [^1]: [2022 StackOverflow Survey](https://survey.stackoverflow.co/2022/#section-version-control-version-control-systems)
 [^2]: [Git vs SVN - Nulab](https://nulab.com/learn/software-development/git-vs-svn-version-control-system/)
@@ -505,7 +535,9 @@ Test coverage of the application had many gaps in retrospect, and although the m
 [^16]: [Integration Testing - FullStackPython](https://www.fullstackpython.com/integration-testing.html)
 [^17]: [Smoke Testing - Guru99](https://www.guru99.com/smoke-testing.html)
 [^18]: [Test Driven Development - Circleci](https://circleci.com/blog/test-driven-development-tdd/#:~:text=Test,testing%20an%20ongoing%2C%20iterative%20process)
-[^19]: [401 Error Code - Mozilla](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/401)
-[^20]: [Automated API Testing - Functionize](https://www.functionize.com/automated-testing/automated-api-testing)
-[^21]: [API Key Free Weather Call - Open Meteo](https://open-meteo.com/)
-[^22]: [Invoke Lambda Function Through API Gateway - Amazon](https://docs.aws.amazon.com/lambda/latest/dg/services-apigateway.html)
+[^19]: [Code of Ethics - IEEE Computer Society](https://www.computer.org/education/code-of-ethics)
+[^20]: [Ethical Web Principals - W3C](https://www.w3.org/TR/ethical-web-principles/)
+[^21]: [401 Error Code - Mozilla](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/401)
+[^22]: [Automated API Testing - Functionize](https://www.functionize.com/automated-testing/automated-api-testing)
+[^23]: [API Key Free Weather Call - Open Meteo](https://open-meteo.com/)
+[^24]: [Invoke Lambda Function Through API Gateway - Amazon](https://docs.aws.amazon.com/lambda/latest/dg/services-apigateway.html)
