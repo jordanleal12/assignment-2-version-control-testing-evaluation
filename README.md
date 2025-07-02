@@ -1,5 +1,16 @@
 # Version Control & Testing Evaluation
 
+## Contents:
+
+**1. [Comparing Version Control Systems](#comparing-version-control-systems)**
+**2. [Standard Source Control Process](#standard-source-control-process---git--github)**
+**3. [How My Project Utilized Source Control](#how-my-project-utilized-source-control)**
+**4. [Standard Testing Process](#standard-testing-process)**
+**5. [Test Driven Development](#test-driven-development)**
+**6. [Incorporating Testing Within Recent Project](#incorporating-testing-within-recent-project)**
+**7. [Main Application Testing](#main-application-testing)**
+**8. [References](#references)**
+
 ## Comparing Version Control Systems
 
 Version control systems are an essential tool in modern software development, with only 1.38% of professional developers opting out of use, according to the most recent relevant survey by StackOverflow in 2022.[^1]
@@ -245,62 +256,81 @@ For an automated process, this involves running pre-determined script(s), mimick
 An example of use in my code is as follows:
 
 ```python
-class DummyHandler:
-    """A simple dummy output handler to simulate terminal output."""
+class FakeOutputHandler:
+    """Simulates terminal output for testing"""
 
     def output(self, data):
-        """Simulate outputting data to the terminal."""
-        print(f"OUTPUT: {data}")
+        """Provides a fake output for pytest instead of printing to terminal"""
 
+        print(f"OUTPUT: {data}") # This will be captured by pytest
 
-class InputDriver:
-    """A class to simulate user input for testing purposes."""
+class FakeInputWriter:
+    """Simulates user input sequence for testing"""
 
-    def __init__(self, responses):
-        self._iter = iter(responses)
+    def __init__(self, inputs):
+        """Constructs an instance with a list of inputs to be iterated over"""
+
+        # Convert list to iterator, giving us next item from list each time it's called
+        self.inputs = iter(inputs)
 
     def __call__(self, prompt=""):
-        return next(self._iter)
+        """Returns next input in sequence by making the object callable like a function"""
 
-def test_cli_happy_path(monkeypatch, capsys):
-    """Test the main() function in main.py with a happy path scenario."""
+        # Use next() to get the next input from the iterator above
+        return next(self.inputs)
 
-    monkeypatch.setenv("OWM_API_KEY", "DUMMY")
+def setup_test_env(monkeypatch, weather_data_func, inputs):
+    """Sets up the test environment by faking api key, weather service response, and user input"""
 
-    # Stub out the network call so we always get a valid dict
-    monkeypatch.setattr(
-        WeatherService, "get_weather_data",
-        lambda self, city: {
+    # Sets the environment variable with fake API key for pytest
+    monkeypatch.setenv("OWM_API_KEY", "TEST_KEY")
+
+    # Replace weather service response with a mock function that returns predefined data
+    monkeypatch.setattr(WeatherService, "get_weather_data", weather_data_func)
+
+    # Use replace real output handler with a fake one for testing
+    monkeypatch.setattr(main, "TerminalOutput", FakeOutputHandler)
+
+    # Simulate user inputs by replacing built-in input function with our fake input writer
+    monkeypatch.setattr(builtins, "input", FakeInputWriter(inputs))
+
+def test_successful_weather_fetch(monkeypatch, capsys):
+    """Tests weather data is fetched correctly with valid city input, captures output with capsys"""
+
+    # Setup mock weather data
+    def fake_weather_data(self, city):
+        """Returns fake weather data for testing purposes without making actual API calls"""
+
+        return {
             "city": city,
             "temperature": 20,
             "humidity": 50,
             "condition": "sunny",
             "local_time": "01-Jan-21 12:00 AM UTC"
         }
-    )
 
-    # Patch the class imported in main.py
-    monkeypatch.setattr(main, "TerminalOutput", DummyHandler)
+    # Configure test environment with fake weather data and user inputs
+    setup_test_env(monkeypatch, fake_weather_data, ["1", "TestCity", "exit"])
 
-    # Simulate typing: [menu choice, city name, exit]
-    responses = ["1", "TestCity", "exit"]
-    monkeypatch.setattr(builtins, "input", InputDriver(responses))
-
-    # Run main(); it'll call exit() on "exit", so catch the SystemExit
+    # Execute main function using with pytest.raises to verify SystemExit is raised on "exit"
     with pytest.raises(SystemExit):
         main.main()
+    output = capsys.readouterr().out # Capture the output printed to terminal
 
-    # Grab what was printed and verify our DummyHandler ran
-    out = capsys.readouterr().out
-    assert "OUTPUT: {'city': 'testcity', 'temperature': 20, 'humidity': 50" in out
+    # Assert output matches expected values
+    assert "OUTPUT: {'city': 'testcity'" in output
+    assert "'temperature': 20" in output
+    assert "'humidity': 50" in output
+    assert "'condition': 'sunny'" in output
+    assert "'local_time': '01-Jan-21 12:00 AM UTC'" in output
 ```
 
 Although verbose, the above process is fairly simple:
 
 - The app requires an API key which is faked using `monkeypatch.setenv`
 - The API call is bypassed using `monkeypatch.setattr` and a fixed fake response is received
-- The real terminal output is replaced with the `DummyHandler` class, to allow testing of the output
-- The user inputs are faked using `monkeypatch.setattr` and the `InputDriver` class to simulate menu selection and city name entry
+- The real terminal output is replaced with the `FakeOutputHandler` class, to allow capture and testing of the output.
+- The user inputs are faked using `monkeypatch.setattr` and the `FakeInputWriter` class to simulate menu selection and city name entry by creating an iterable object with a list of pre-determined user inputs.
 - The app is run, and `exit()` is called to test app exiting
 - App output is captured by `capsys.readouterr()`
 - The output is asserted by pytest to ensure that the output matches expectations
@@ -594,6 +624,281 @@ Referring to Code of Ethics (COE)[^19] and Ethical Web Principles (EWP)[^20]
 ## Main Application Testing
 
 Although some of the testing used was covered in [Standing Testing Process](#standard-testing-process), we will re-iterate the two main tests used for testing main application features.
+
+The first is the smoke test used to simulate user input into the main function:
+
+```python
+"""Smoke tests for main CLI application, the entry point for the application."""
+
+import builtins # Used to mock user input
+import pytest # Used for testing
+import main # Main application module
+from weather_service import WeatherService # Weather service module
+
+class FakeOutputHandler:
+    """Simulates terminal output for testing"""
+
+    def output(self, data):
+        """Provides a fake output for pytest instead of printing to terminal"""
+
+        print(f"OUTPUT: {data}") # This will be captured by pytest
+
+class FakeInputWriter:
+    """Simulates user input sequence for testing"""
+
+    def __init__(self, inputs):
+        """Constructs an instance with a list of inputs to be iterated over"""
+
+        # Convert list to iterator, giving us next item from list each time it's called
+        self.inputs = iter(inputs)
+
+    def __call__(self, prompt=""):
+        """Returns next input in sequence by making the object callable like a function"""
+
+        # Use next() to get the next input from the iterator above
+        return next(self.inputs)
+
+def setup_test_env(monkeypatch, weather_data_func, inputs):
+    """Sets up the test environment by faking api key, weather service response, and user input"""
+
+    # Sets the environment variable with fake API key for pytest
+    monkeypatch.setenv("OWM_API_KEY", "TEST_KEY")
+
+    # Replace weather service response with a mock function that returns predefined data
+    monkeypatch.setattr(WeatherService, "get_weather_data", weather_data_func)
+
+    # Use replace real output handler with a fake one for testing
+    monkeypatch.setattr(main, "TerminalOutput", FakeOutputHandler)
+
+    # Simulate user inputs by replacing built-in input function with our fake input writer
+    monkeypatch.setattr(builtins, "input", FakeInputWriter(inputs))
+
+def test_successful_weather_fetch(monkeypatch, capsys):
+    """Tests weather data is fetched correctly with valid city input, captures output with capsys"""
+
+    # Setup mock weather data
+    def fake_weather_data(self, city):
+        """Returns fake weather data for testing purposes without making actual API calls"""
+
+        return {
+            "city": city,
+            "temperature": 20,
+            "humidity": 50,
+            "condition": "sunny",
+            "local_time": "01-Jan-21 12:00 AM UTC"
+        }
+
+    # Configure test environment with fake weather data and user inputs
+    setup_test_env(monkeypatch, fake_weather_data, ["1", "TestCity", "exit"])
+
+    # Execute main function using with pytest.raises to verify SystemExit is raised on "exit"
+    with pytest.raises(SystemExit):
+        main.main()
+    output = capsys.readouterr().out # Capture the output printed to terminal
+
+    # Assert output matches expected values
+    assert "OUTPUT: {'city': 'testcity'" in output
+    assert "'temperature': 20" in output
+    assert "'humidity': 50" in output
+    assert "'condition': 'sunny'" in output
+    assert "'local_time': '01-Jan-21 12:00 AM UTC'" in output
+
+def test_invalid_city_handling(monkeypatch, capsys):
+    """Tests error handling for non-existent city"""
+
+    # Setup fake API call to return empty data
+    def fake_weather_data(self, city):
+        return {}
+
+    # Configure test environment with fake weather data and user inputs
+    setup_test_env(
+        monkeypatch,
+        fake_weather_data,
+        ["1", "InvalidCity", "exit"]
+    )
+
+    # Execute main function using with pytest.raises to verify SystemExit is raised on "exit"
+    with pytest.raises(SystemExit):
+        main.main()
+    output = capsys.readouterr().out
+
+    # Assert output contains expected error message for no data found
+    assert "Value Error: No data found for the specified city." in output
+```
+
+- The first class `FakeOutputHandler` replaces the terminal output handler with a fake output that can be captured by pytest to assert output.
+- The second class `FakeInputWriter` allows for an iterable object to be created that can be called upon multiple times, with each call iterating over a simulated user input.
+- The first function `setup_test_env` uses monkeypatch to create a test environment simulating the API key, the API response, and the user input for the duration of the pytest test.
+- The second function `test_successful_weather_fetch` ensures that the function returns the correct weather data given the pre-provided user inputs. It captures the output with capsys and then asserts the correct values are returned.
+- This function uses `with pytest.raises (SystemExit): main.main()` to verify SystemExit is raised on "exit" command being passed to the CLI.
+- The nested function `fake_weather_data` returns a preset response when called, instead of calling the actual API
+- The third function `test_invalid_city_handling` asserts that the correct error messages are returned when an invalid city is called.
+- The nested function `fake_weather_data` simulates the API call returning an empty dictionary as part of its error handling procedure.
+
+The second main test is the integration test to ensure our application can successfully process the json received from the API into our relevant weather data, and to ensure it correctly handles any errors that occur while contacting the API. It is as follows:
+
+```python
+"""Tests weather_service.py module using pytest and requests-mock."""
+
+import requests
+from weather_service import WeatherService
+import dt_conversion
+
+def test_get_weather_data_success(requests_mock, monkeypatch):
+    """Test successful processing of weather data from the API."""
+
+    # Create fake JSON response that the API would return
+    fake_json = {
+   "coord": {
+      "lon": 0,
+      "lat": 0
+   },
+   "weather": [
+      {
+         "main": "Rain",
+         "description": "clear sky",
+      }
+   ],
+   "main": {
+      "temp": 22.5,
+      "humidity": 55,
+   },
+   "dt": 1609459200,
+   "name": "TestCity",
+   "cod": 200
+}
+
+    # replace the real API call using requests_mock and returning the fake JSON
+    requests_mock.get(
+        "https://api.openweathermap.org/data/2.5/weather",
+        json=fake_json,
+        status_code=200
+    )
+
+    ws = WeatherService(api_key="DUMMY_KEY") # Create instance of WeatherService with a fake API key
+    result = ws.get_weather_data("TestCity") # Call the method to get weather data for "TestCity"
+
+    # Assert that the result is a dictionary with expected keys and values
+    assert result["city"] == "TestCity"
+    assert result["temperature"] == 22.5
+    assert result["humidity"] == 55
+    assert result["condition"] == "clear sky"
+    # Accept either UTC or GMT for local time as both are valid representations
+    assert (
+        result["local_time"] == "01-Jan-21 12:00 AM UTC" or
+        result["local_time"] == "01-Jan-21 12:00 AM GMT"
+    )
+
+
+def test_get_weather_data_timeout(requests_mock, capsys):
+    """Test handling of a timeout when retrieving weather data from the API."""
+
+    # Simulate a timeout when requests.get is called using requests_mock
+    requests_mock.get(
+        "https://api.openweathermap.org/data/2.5/weather",
+        exc=requests.exceptions.Timeout
+    )
+    ws = WeatherService(api_key="DUMMY_KEY") # Create instance of WeatherService with fake API key
+    result = ws.get_weather_data("TestCity") # Call the method to get weather data for "TestCity"
+    captured = capsys.readouterr() # Capture printed output
+
+    # Assert that the result is an empty dictionary and the correct error message is printed
+    assert result == {}, "On timeout, should return empty dict"
+    assert "Error: Request timed out (10 seconds)" in captured.out
+
+
+def test_get_weather_data_connection_error(requests_mock, capsys):
+    """Test handling of a connection error when retrieving weather data from the API."""
+
+    # Simulate a connection error when requests.get is called using requests_mock
+    requests_mock.get(
+        "https://api.openweathermap.org/data/2.5/weather",
+        exc=requests.exceptions.ConnectionError
+    )
+    ws = WeatherService(api_key="DUMMY_KEY") # Create instance of WeatherService with fake API key
+    result = ws.get_weather_data("TestCity") # Call the method to get weather data for "TestCity"
+    captured = capsys.readouterr() # Capture printed output
+
+    # Assert that the result is an empty dictionary and the correct error message is printed
+    assert result == {}, "On timeout, should return empty dict"
+    assert "Error: Unable to connect to the OpenWeatherMap API" in captured.out
+
+
+def test_get_weather_data_http_error(requests_mock, capsys):
+    """Test handling of HTTP error when retrieving weather data from the API."""
+
+    # Simulate an HTTP error (eg. 404 Not Found) when requests.get is called using requests_mock
+    requests_mock.get(
+        "https://api.openweathermap.org/data/2.5/weather",
+        status_code=404,
+        reason="Not Found"
+    )
+    ws = WeatherService(api_key="DUMMY_KEY") # Create instance of WeatherService with fake API key
+    result = ws.get_weather_data("TestCity") # Call the method to get weather data for "TestCity"
+    captured = capsys.readouterr() # Capture printed output
+
+    # Assert that the result is an empty dictionary and the correct error message is printed
+    assert result == {}
+    assert "HTTP Error: 404 - Not Found" in captured.out
+
+
+def test_get_weather_data_generic_exception(monkeypatch, capsys):
+    """Test handling of an unexpected request exception when retrieving weather data."""
+
+    # Patch requests.get to raise a raw RequestException (not HTTPError, Timeout, etc.)
+    def raise_req_exception(*args, **kwargs):
+        """Function to raise a RequestException for testing purposes."""
+
+        raise requests.RequestException("test error") # Simulate a generic request exception
+
+    # Replace requests.get with our function that raises an exception
+    monkeypatch.setattr(requests, "get", raise_req_exception)
+
+    ws = WeatherService(api_key="KEY") # Create instance of WeatherService with a fake API key
+    result = ws.get_weather_data("City") # Call the method to get weather data for "City"
+    captured = capsys.readouterr() # Capture printed output
+
+    # Assert that the result is an empty dictionary and the correct error message is printed
+    assert result == {}
+    assert "Network Error: test error" in captured.out
+
+
+def test_get_weather_data_key_error(requests_mock, capsys, monkeypatch):
+    """Test handling of KeyError when retrieving weather data from the API."""
+
+    # Return JSON with missing expected fields
+    broken_json = {
+        "name": "City",
+        "main": {},  # missing 'temp'
+        "weather": [],  # missing [0]['description']
+        "dt": 123456789,
+        "coord": {"lat": 0, "lon": 0}
+    }
+
+    # Fake the API response to return the broken JSON
+    requests_mock.get(
+        "https://api.openweathermap.org/data/2.5/weather",
+        json=broken_json,
+        status_code=200
+    )
+
+    ws = WeatherService(api_key="KEY") # Create instance of WeatherService with a fake API key
+    result = ws.get_weather_data("City") # Call the method to get weather data for "City"
+    captured = capsys.readouterr() # Capture printed output
+
+    # Assert that the result is an empty dictionary and the correct error message is printed
+    assert result == {}
+    assert "Data Error: Missing expected field" in captured.out
+```
+
+- The first function `test_get_weather_data_success` simulates a successful request to the API using requests_mock, and asserts that the data is correctly processed by the application.
+- The second function `test_get_weather_data_timeout` simulates a timeout error using request_mock and asserts that an empty dictionary and appropriate error message is returned.
+- The third function `test_get_weather_data_connection_error` simulates a connection error using request_mock and asserts that an empty dictionary and appropriate error message is returned.
+- The fourth function `test_get_weather_data_http_error` simulates a HTTP error using request_mock and asserts that an empty dictionary and appropriate error message is returned.
+- The fifth function `test_get_weather_data_generic_exception` simulates a generic, unexpected error using request_mock and asserts that an empty dictionary and appropriate error message is returned.
+- The sixth function `test_get_weather_data_key_error` simulates a json with missing or unexpected keys using request_mock and asserts that an empty dictionary and appropriate error message is returned.
+
+## References
 
 [^1]: [2022 StackOverflow Survey](https://survey.stackoverflow.co/2022/#section-version-control-version-control-systems)
 [^2]: [Git vs SVN - Nulab](https://nulab.com/learn/software-development/git-vs-svn-version-control-system/)
